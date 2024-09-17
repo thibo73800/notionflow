@@ -1,0 +1,37 @@
+{
+    "manifest_version": 3,
+    "name": "Notion ChatGPT Extension",
+    "version": "1.0",
+    "description": "A Chrome extension to interact with Notion using ChatGPT.",
+    "permissions": [
+        "activeTab",
+        "storage",
+        "scripting",
+        "sidePanel",
+        "tabs",
+        "http://127.0.0.1:5500/*"
+    ],
+    "host_permissions": [
+        "https://api.notion.com/*"
+    ],
+    "background": {
+        "service_worker": "scripts/background.js"
+    },
+    "side_panel": {
+        "default_path": "popup.html"
+    },
+    "action": {
+        "default_title": "Click to open Flow",
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "images/icon16.png",
+            "48": "images/icon48.png",
+            "128": "images/icon128.png"
+        }
+    },
+    "icons": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    }
+}

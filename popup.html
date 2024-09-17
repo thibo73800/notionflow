@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Notion ChatGPT Extension</title>
+  <link rel="stylesheet" type="text/css" href="styles/base.css">
+  <link rel="stylesheet" type="text/css" href="styles/overlay.css">
+</head>
+<body>
+  
+  <div id="content">
+    <h1>Notion ChatGPT</h1>
+    <button id="reset" class="small-button">Reset</button>
+    <div id="chat-container">
+      <div id="chat"></div>
+    </div>
+    <textarea id="input" rows="2" placeholder="Type your query..."></textarea>
+    <button id="send">Send</button>
+    <button id="run">Run prompt</button>
+    <a href="settings.html" id="settings-link" class="small-button" aria-label="Settings"></a>
+    <div id="loader" class="hidden"></div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay hidden">
+    <div class="overlay-content">
+      <h2>API Keys Required</h2>
+      <p>Please set your ChatGPT and Notion API keys in the <a href="settings.html">Settings</a> to use the extension.</p>
+    </div>
+  </div>
+
+  <script src="dist/popup.bundle.js" type="module"></script>
+</body>
+</html>

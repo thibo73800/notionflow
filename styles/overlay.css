@@ -1,0 +1,44 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 400px;
+    width: 80%;
+}
+
+.overlay-content h2 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.overlay-content p {
+    font-size: 1em;
+    color: #555;
+}
+
+.overlay-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.overlay-content a:hover {
+    text-decoration: underline;
+}
+
+.hidden {
+    display: none;
+}

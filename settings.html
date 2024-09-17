@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Settings - Notion ChatGPT Extension</title>
+  <link rel="stylesheet" type="text/css" href="styles/settings.css">
+</head>
+<body>
+  <div id="settings-content">
+    <h1>Settings</h1>
+    <form id="api-form">
+      <label for="chatgpt-api-key">ChatGPT API Key:</label>
+      <input type="text" id="chatgpt-api-key" name="chatgptApiKey" required>
+      <p class="instruction">
+        To generate a ChatGPT API key, visit the <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API Keys page</a> and follow the instructions.
+      </p>
+
+      <label for="notion-api-key">Notion API Key:</label>
+      <input type="text" id="notion-api-key" name="notionApiKey" required>
+      <p class="instruction">
+        To generate a Notion API key, go to the <a href="https://www.notion.so/my-integrations" target="_blank">Notion Integrations page</a>, create a new integration, copy the generated API key. 
+        Then, on the workspace or page you want to work on add the integration from the ... button in the upper right corner of the page.
+      </p>
+
+      <button type="submit">Save</button>
+    </form>
+    <div id="status"></div>
+    <a href="popup.html" id="back-link" class="small-button">Back</a>
+    <a href="settings.html" id="settings-link" class="small-button" aria-label="Settings"></a>
+  </div>
+
+  <script src="dist/settings.bundle.js" type="module"></script>
+</body>
+</html>

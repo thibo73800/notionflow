@@ -1,0 +1,5 @@
+dist/
+libs/
+node_modules/
+__scripts/
+package-lock.json
