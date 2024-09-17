@@ -15,7 +15,7 @@
         "https://api.notion.com/*"
     ],
     "background": {
-        "service_worker": "scripts/background.js"
+        "service_worker": "src/background.js"
     },
     "side_panel": {
         "default_path": "popup.html"
