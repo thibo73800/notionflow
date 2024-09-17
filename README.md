@@ -139,6 +139,4 @@ This extension is currently a **work in progress**. While core features are impl
 
 [MIT](LICENSE)
 
-## Contact
 
-For any questions, suggestions, or feedback, please reach out to [your.email@example.com](mailto:your.email@example.com).
