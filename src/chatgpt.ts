@@ -113,6 +113,8 @@ class ChatGPT {
             }
         }
 
+        console.warn("assistantMessage", assistantMessage);
+
         this.messages.push({
             role: "assistant",
             content: assistantMessage

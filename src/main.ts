@@ -3,25 +3,152 @@ import { showLoader, hideLoader, addUserMessage, addChatGPTMessage, updateChatGP
 import { getCurrentNotionPageId, clearConversation, saveLastNotionPageId, getLastNotionPageId, getApiKeys } from './utils';
 import { ChatGPT } from './chatgpt';
 
+
+const settingsLink = document.getElementById('settings-link')!;
+const overlay = document.getElementById('overlay')!;
 const sendButton = document.getElementById('send')!;
 const resetButton = document.getElementById('reset')!;
 const runButton = document.getElementById('run')!;
-const settingsLink = document.getElementById('settings-link')!;
-const overlay = document.getElementById('overlay')!;
 
-if (sendButton) {
-    sendButton.addEventListener('click', handleSendClick);
-}
-if (resetButton) {
-    resetButton.addEventListener('click', handleResetClick);
-}
-if (runButton) {
-    runButton.addEventListener('click', handleRunClick);
-}
 
 let chatGPT: ChatGPT;
 let notionAPI: NotionAPI;
 let isFirstMessage: boolean = true;
+
+
+async function handleSendClick() {
+    runButton.style.display = 'none';
+    const inputElement = document.getElementById('input') as HTMLTextAreaElement;
+    const chatElement = document.getElementById('chat')!;
+    const loaderElement = document.getElementById('loader')!;
+
+    if (!inputElement) {
+        console.error('Input element not found');
+        return;
+    }
+
+    const userInput = inputElement.value;
+    if (!userInput.trim()) return;
+
+    addUserMessage(userInput);
+    addMessageToConversation({ sender: 'user', content: userInput });
+    showLoader(loaderElement);
+    clearInput(inputElement);
+
+    
+    chatGPT.addUserInput(userInput);
+    let messageID: string | null = null;
+    let totalChunk: string = "";
+    let chunkQueue: string[] = [];
+    let isProcessingChunk = false;
+
+    const processNextChunk = async () => {
+        if (chunkQueue.length === 0) {
+            isProcessingChunk = false;
+            return;
+        }
+        const chunk = chunkQueue.shift()!;
+        if (!messageID) {
+            console.log("chunk", chunk);
+            totalChunk = chunk;
+            messageID = await addChatGPTMessage(chunk);
+        } else {
+            totalChunk += chunk;
+            await updateChatGPTMessage(messageID, totalChunk);
+        }
+        await processNextChunk();
+    };
+
+    const onChunk = async (chunk: string) => {
+        chunkQueue.push(chunk);
+        if (!isProcessingChunk) {
+            isProcessingChunk = true;
+            await processNextChunk();
+        }
+    };
+
+    try {
+        const chatGPTResponse = await chatGPT.getChatGPTResponse(onChunk);
+        addMessageToConversation({ sender: 'chatgpt', content: chatGPTResponse });
+    } catch (error) {
+        handleError(error as Error, chatElement);
+    } finally {
+        hideLoader(loaderElement);
+    }
+}
+
+async function handleRunClick() {
+    runButton.style.display = 'none';
+    const chatElement = document.getElementById('chat')!;
+    const loaderElement = document.getElementById('loader')!;
+
+    const userMessage: string = chatGPT.getLastInput();
+    addUserMessage(userMessage);
+    addMessageToConversation({ sender: 'user', content: userMessage });
+
+    showLoader(loaderElement);
+    
+    let messageID: string | null = null;
+    let totalChunk: string = "";
+    let chunkQueue: string[] = [];
+    let isProcessingChunk = false;
+
+    const processNextChunk = async () => {
+        if (chunkQueue.length === 0) {
+            isProcessingChunk = false;
+            return;
+        }
+        const chunk = chunkQueue.shift()!;
+        if (!messageID) {
+            console.log("chunk", chunk);
+            totalChunk = chunk;
+            messageID = await addChatGPTMessage(chunk);
+        } else {
+            totalChunk += chunk;
+            await updateChatGPTMessage(messageID, totalChunk);
+        }
+        await processNextChunk();
+    };
+
+    const onChunk = async (chunk: string) => {
+        chunkQueue.push(chunk);
+        if (!isProcessingChunk) {
+            isProcessingChunk = true;
+            await processNextChunk();
+        }
+    };
+
+    try {
+        const chatGPTResponse = await chatGPT.getChatGPTResponse(onChunk);
+        addMessageToConversation({ sender: 'chatgpt', content: totalChunk });
+    } catch (error) {
+        handleError(error as Error, chatElement);
+    } finally {
+        hideLoader(loaderElement);
+    }
+}
+
+async function handleResetClick() {
+    const chatElement = document.getElementById('chat')!;
+    const loaderElement = document.getElementById('loader')!;
+
+    showLoader(loaderElement);
+    try {
+        await clearConversation();
+        chatElement.innerHTML = '';
+        chatGPT.messages = [
+            {
+                role: "system",
+                content: "You are a helpful assistant. Always answer in markdown."
+            }
+        ];
+        isFirstMessage = true;
+    } catch (error) {
+        handleError(error as Error, chatElement);
+    } finally {
+        hideLoader(loaderElement);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', async function() {
     const loaderElement = document.getElementById('loader')!;
@@ -128,95 +255,14 @@ function displayMessage(message: { sender: string; content: string }) {
     }
 }
 
-async function handleSendClick() {
-    runButton.style.display = 'none';
-    const inputElement = document.getElementById('input') as HTMLTextAreaElement;
-    const chatElement = document.getElementById('chat')!;
-    const loaderElement = document.getElementById('loader')!;
 
-    if (!inputElement) {
-        console.error('Input element not found');
-        return;
-    }
 
-    const userInput = inputElement.value;
-    if (!userInput.trim()) return;
-
-    addUserMessage(userInput);
-    addMessageToConversation({ sender: 'user', content: userInput });
-    showLoader(loaderElement);
-    clearInput(inputElement);
-
-    try {
-        chatGPT.addUserInput(userInput);
-        let messageID: string | null = null;
-        let totalChunk: string = "";
-        const chatGPTResponse = await chatGPT.getChatGPTResponse(async (chunk) => {
-            if (!messageID) {
-                totalChunk = chunk;
-                messageID = await addChatGPTMessage(chunk);
-            } else {
-                totalChunk += chunk;
-                updateChatGPTMessage(messageID, totalChunk);
-            }
-        });
-        addMessageToConversation({ sender: 'chatgpt', content: chatGPTResponse });
-    } catch (error) {
-        handleError(error as Error, chatElement);
-    } finally {
-        hideLoader(loaderElement);
-    }
+if (sendButton) {
+    sendButton.addEventListener('click', handleSendClick);
 }
-
-async function handleRunClick() {
-    runButton.style.display = 'none';
-    const chatElement = document.getElementById('chat')!;
-    const loaderElement = document.getElementById('loader')!;
-
-
-    const userMessage: string = chatGPT.getLastInput();
-    addUserMessage(userMessage);
-    addMessageToConversation({ sender: 'user', content: userMessage });
-
-    showLoader(loaderElement);
-    try {
-        let messageID: string | null = null;
-        let totalChunk: string = "";
-        const chatGPTResponse = await chatGPT.getChatGPTResponse(async (chunk) => {
-            if (!messageID) {
-                totalChunk = chunk;
-                messageID = await addChatGPTMessage(chunk);
-            } else {
-                totalChunk += chunk;
-                updateChatGPTMessage(messageID, totalChunk);
-            }
-        });
-        addMessageToConversation({ sender: 'chatgpt', content: totalChunk});
-    } catch (error) {
-        handleError(error as Error, chatElement);
-    } finally {
-        hideLoader(loaderElement);
-    }
+if (resetButton) {
+    resetButton.addEventListener('click', handleResetClick);
 }
-
-async function handleResetClick() {
-    const chatElement = document.getElementById('chat')!;
-    const loaderElement = document.getElementById('loader')!;
-
-    showLoader(loaderElement);
-    try {
-        await clearConversation();
-        chatElement.innerHTML = '';
-        chatGPT.messages = [
-            {
-                role: "system",
-                content: "You are a helpful assistant. Always answer in markdown."
-            }
-        ];
-        isFirstMessage = true;
-    } catch (error) {
-        handleError(error as Error, chatElement);
-    } finally {
-        hideLoader(loaderElement);
-    }
+if (runButton) {
+    runButton.addEventListener('click', handleRunClick);
 }
